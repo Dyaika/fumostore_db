@@ -1,0 +1,16 @@
+version: '3.1'
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: my-mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: fumo_plush_store
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 1111
+    restart: always
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./fumodb_structure.sql:/docker-entrypoint-initdb.d/fumodb_structure.sql
