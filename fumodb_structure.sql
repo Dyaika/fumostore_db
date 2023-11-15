@@ -4,12 +4,28 @@ GRANT ALL PRIVILEGES ON *.* TO 'user'@'%' WITH GRANT OPTION;
 -- Применение изменений
 FLUSH PRIVILEGES;
 
+SET NAMES 'utf8';
+
+CREATE TABLE order_status (
+  status_id tinyint NOT NULL AUTO_INCREMENT,
+  status_name varchar(30) NOT NULL,
+  PRIMARY KEY (status_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO order_status (status_name)
+values
+	('создан'), 					-- 1
+	('оплачен'), 					-- 2
+	('ожидает получения'), 			-- 3
+	('ожидает получения и оплаты'),	-- 4
+	('получен'),					-- 5
+	('отменен');					-- 6
 
 CREATE TABLE city (
   city_id int NOT NULL AUTO_INCREMENT,
   city_name varchar(25) NOT NULL,
   PRIMARY KEY (city_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO city (city_name)
 values
@@ -22,7 +38,7 @@ CREATE TABLE street (
   street_id int NOT NULL AUTO_INCREMENT,
   street_name varchar(100) NOT NULL,
   PRIMARY KEY (street_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO street (street_name) VALUES 
   ('Tverskaya Street'),
@@ -179,15 +195,15 @@ CREATE TABLE item (
   item_height float DEFAULT NULL,
   image_url text DEFAULT NULL,
   PRIMARY KEY (item_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO item (item_name, item_cost, item_description, item_release_year, item_width, item_height, image_url)
 VALUES 
-  ('Reimu Hakurei Fumofumo', 2500.00, 'Мягкая и приятная игрушка с изображением Рейму Хакурей из Touhou Project.', NULL, 30.0, 20.0, 'reimu_fumofumo.jpg'),
-  ('Marisa Kirisame Fumofumo', 2800.00, 'Милый и пушистый плюшевый мариса Кирисаме, вдохновленный Touhou Project.', NULL, 25.0, 18.0, 'marisa_fumofumo.jpg'),
-  ('Yuyuko Saigyoji Fumofumo', 3500.00, 'Прекрасный плюшевый Yuyuko Saigyoji с тонкими деталями.', NULL, 35.0, 22.0, 'yuyuko_fumofumo.jpg'),
-  ('Flandre Scarlett Fumofumo', 4200.00, 'Очаровательная и красочная плюшевая игрушка Flandre Scarlett из Touhou Project.', NULL, 28.0, 25.0, 'flandre_fumofumo.jpg'),
-  ('Youmu Konpaku Fumofumo', 3200.00, 'Плюшевая игрушка Fumofumo с изображением Youmu Konpaku с мечом, обязательная для поклонников Touhou.', NULL, 32.0, 15.0, 'youmu_fumofumo.jpg');
+  ('Reimu Hakure', 2500.00, 'Мягкая и приятная игрушка с изображением Рейму Хакурей из Touhou Project.', NULL, 30.0, 20.0, 'reimu_fumofumo.jpg'),
+  ('Marisa Kirisame', 2800.00, 'Милый и пушистый плюшевый мариса Кирисаме, вдохновленный Touhou Project.', NULL, 25.0, 18.0, 'marisa_fumofumo.jpg'),
+  ('Yuyuko Saigyoji', 3500.00, 'Прекрасный плюшевый Yuyuko Saigyoji с тонкими деталями.', NULL, 35.0, 22.0, 'yuyuko_fumofumo.jpg'),
+  ('Flandre Scarlett', 4200.00, 'Очаровательная и красочная плюшевая игрушка Flandre Scarlett из Touhou Project.', NULL, 28.0, 25.0, 'flandre_fumofumo.jpg'),
+  ('Youmu Konpaku', 3200.00, 'Плюшевая игрушка Fumofumo с изображением Youmu Konpaku с мечом, обязательная для поклонников Touhou.', NULL, 32.0, 15.0, 'youmu_fumofumo.jpg');
 
 CREATE TABLE notification (
   notification_id int NOT NULL AUTO_INCREMENT,
@@ -196,7 +212,7 @@ CREATE TABLE notification (
   customer_id int NOT NULL,
   PRIMARY KEY (notification_id),
   FOREIGN KEY (customer_id) REFERENCES customer (customer_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO notification (notification_title, notification_content, customer_id)
 VALUES 
@@ -222,7 +238,7 @@ VALUES
 
 CREATE TABLE myorder (
   order_id int NOT NULL AUTO_INCREMENT,
-  order_status tinyint NOT NULL, -- 1 создан 2 оплачен 3 получен 4 отменен
+  order_status_id tinyint NOT NULL,
   order_cost double NOT NULL,
   voucher_id int DEFAULT NULL,
   store_id int DEFAULT NULL,
@@ -230,7 +246,8 @@ CREATE TABLE myorder (
   PRIMARY KEY (order_id),
   FOREIGN KEY (voucher_id) REFERENCES voucher (voucher_id),
   FOREIGN KEY (store_id) REFERENCES store (store_id),
-  FOREIGN KEY (customer_id) REFERENCES customer (customer_id)
+  FOREIGN KEY (customer_id) REFERENCES customer (customer_id),
+  FOREIGN KEY (order_status_id) REFERENCES order_status (status_id)
 );
 
 DELIMITER //
@@ -269,7 +286,7 @@ CREATE TABLE itemorder_association (
 );
 
 -- Заказ 1
-INSERT INTO myorder (order_status, order_cost, store_id, customer_id, voucher_id)
+INSERT INTO myorder (order_status_id, order_cost, store_id, customer_id, voucher_id)
 VALUES 
   (1, 3750.00, 1, 3, 2);
 INSERT INTO itemorder_association (order_id, item_id, item_count)
@@ -277,7 +294,7 @@ VALUES
   (1, 1, 2);
 
 -- Заказ 2
-INSERT INTO myorder (order_status, order_cost, store_id, customer_id)
+INSERT INTO myorder (order_status_id, order_cost, store_id, customer_id)
 VALUES 
   (2, 5300.00, 2, 1);
 INSERT INTO itemorder_association (order_id, item_id, item_count)
@@ -286,7 +303,7 @@ VALUES
   (2, 1, 1);
   
 -- Заказ 3
-INSERT INTO myorder (order_status, order_cost, store_id, customer_id)
+INSERT INTO myorder (order_status_id, order_cost, store_id, customer_id)
 VALUES 
   (1, 8800.00, 3, 2);
 INSERT INTO itemorder_association (order_id, item_id, item_count)
@@ -296,9 +313,9 @@ VALUES
   (3, 1, 1);
 
 -- Заказ 4
-INSERT INTO myorder (order_status, order_cost, store_id, customer_id)
+INSERT INTO myorder (order_status_id, order_cost, store_id, customer_id)
 VALUES
-  (3, 4200.00, 4, 3);
+  (5, 4200.00, 4, 3);
 INSERT INTO itemorder_association (order_id, item_id, item_count)
 VALUES 
   (4, 4, 1);
@@ -325,11 +342,11 @@ CREATE TABLE review (
   order_id int NOT NULL,
   PRIMARY KEY (order_id),
   FOREIGN KEY (order_id) REFERENCES myorder (order_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO review (review_text, rating, order_id)
 VALUES 
-  ('Отличная игрушка! Большое спасибо, всё как ожидалось. Рейтинг 5/5.', 5, 3);
+  ('Отличная игрушка! Большое спасибо, всё как ожидалось. Рейтинг 5/5.', 5, 4);
 
 CREATE TABLE checks (
   check_print_time datetime NOT NULL,
