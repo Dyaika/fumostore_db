@@ -258,28 +258,6 @@ END //
 
 DELIMITER ;
 
-INSERT INTO myorder (order_status, order_cost, store_id, customer_id, voucher_id)
-VALUES 
-  (1, 3750.00, 1, 3, 2);
-
-INSERT INTO myorder (order_status, order_cost, store_id, customer_id)
-VALUES 
-  (2, 2800.00, 2, 1),
-  (1, 3500.00, 3, 2),
-  (3, 4200.00, 4, 3);
-
-CREATE TABLE review (
-  review_text text DEFAULT NULL,
-  rating tinyint CHECK (rating >= 0 AND rating <= 5) NOT NULL,
-  order_id int NOT NULL,
-  PRIMARY KEY (order_id),
-  FOREIGN KEY (order_id) REFERENCES myorder (order_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
-INSERT INTO review (review_text, rating, order_id)
-VALUES 
-  ('Отличная игрушка! Большое спасибо, всё как ожидалось. Рейтинг 5/5.', 5, 3);
-
 
 CREATE TABLE itemorder_association (
   item_count int NOT NULL,
@@ -290,6 +268,41 @@ CREATE TABLE itemorder_association (
   FOREIGN KEY (order_id) REFERENCES myorder (order_id)
 );
 
+-- Заказ 1
+INSERT INTO myorder (order_status, order_cost, store_id, customer_id, voucher_id)
+VALUES 
+  (1, 3750.00, 1, 3, 2);
+INSERT INTO itemorder_association (order_id, item_id, item_count)
+VALUES 
+  (1, 1, 2);
+
+-- Заказ 2
+INSERT INTO myorder (order_status, order_cost, store_id, customer_id)
+VALUES 
+  (2, 5300.00, 2, 1);
+INSERT INTO itemorder_association (order_id, item_id, item_count)
+VALUES 
+  (2, 2, 1),
+  (2, 1, 1);
+  
+-- Заказ 3
+INSERT INTO myorder (order_status, order_cost, store_id, customer_id)
+VALUES 
+  (1, 8800.00, 3, 2);
+INSERT INTO itemorder_association (order_id, item_id, item_count)
+VALUES 
+  (3, 3, 1),
+  (3, 2, 1),
+  (3, 1, 1);
+
+-- Заказ 4
+INSERT INTO myorder (order_status, order_cost, store_id, customer_id)
+VALUES
+  (3, 4200.00, 4, 3);
+INSERT INTO itemorder_association (order_id, item_id, item_count)
+VALUES 
+  (4, 4, 1);
+  
 DELIMITER //
 
 -- Функция подсчета полной стоимости
@@ -306,12 +319,17 @@ END //
 
 DELIMITER ;
 
-INSERT INTO itemorder_association (item_count, item_id, order_id)
+CREATE TABLE review (
+  review_text text DEFAULT NULL,
+  rating tinyint CHECK (rating >= 0 AND rating <= 5) NOT NULL,
+  order_id int NOT NULL,
+  PRIMARY KEY (order_id),
+  FOREIGN KEY (order_id) REFERENCES myorder (order_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+INSERT INTO review (review_text, rating, order_id)
 VALUES 
-  (2, 1, 1),
-  (1, 2, 2),
-  (1, 3, 3),
-  (1, 4, 4);
+  ('Отличная игрушка! Большое спасибо, всё как ожидалось. Рейтинг 5/5.', 5, 3);
 
 CREATE TABLE checks (
   check_print_time datetime NOT NULL,
@@ -326,9 +344,3 @@ INSERT INTO checks (check_print_time, order_id, paid_in_cash, paid_by_card)
 VALUES 
   ('2023-11-11 15:45:00', 2, 2500.00, NULL),
   ('2023-11-13 16:00:00', 4, NULL, 4200.00);
-  
-
-
-
-
-

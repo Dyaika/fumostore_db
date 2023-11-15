@@ -78,3 +78,32 @@ FROM helpy
 EXCEPT
 SELECT tt.city_name
 FROM tt;
+
+-- Деление снова, но адекватное
+WITH 
+	dividend as (
+	SELECT ia.order_id, ia.item_id 
+	FROM itemorder_association ia),
+	
+	divider as (
+	SELECT i.item_id 
+	FROM item i
+	WHERE i.item_id IN (1, 2)),
+	
+	helpy as (
+	SELECT DISTINCT dd.order_id
+	FROM dividend dd),
+	
+	tt as (
+	SELECT *
+	FROM helpy
+	CROSS JOIN divider
+	EXCEPT
+	SELECT *
+	FROM dividend)
+
+SELECT *
+FROM helpy
+EXCEPT
+SELECT tt.order_id
+FROM tt;
