@@ -233,6 +233,31 @@ CREATE TABLE myorder (
   FOREIGN KEY (customer_id) REFERENCES customer (customer_id)
 );
 
+DELIMITER //
+
+-- Триггер перед вставкой в myorder
+CREATE TRIGGER BeforeInsertOrders
+BEFORE INSERT ON myorder
+FOR EACH ROW
+BEGIN
+	SET @promo = NEW.voucher_id;
+	IF @promo IS NOT NULL THEN
+		SELECT v2.applies_left_count
+		INTO @count
+		FROM voucher v2 
+		WHERE v2.voucher_id = @promo;
+		IF @count < 1 THEN
+			SIGNAL SQLSTATE '45000'
+        	SET MESSAGE_TEXT = 'This voucher is not available';
+        ELSE
+        	UPDATE voucher SET applies_left_count = @count - 1
+        	WHERE voucher_id = @promo;
+        END IF;
+	END IF;
+END //
+
+DELIMITER ;
+
 INSERT INTO myorder (order_status, order_cost, store_id, customer_id, voucher_id)
 VALUES 
   (1, 3750.00, 1, 3, 2);
