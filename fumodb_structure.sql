@@ -217,8 +217,7 @@ CREATE TABLE notification (
 INSERT INTO notification (notification_title, notification_content, customer_id)
 VALUES 
   ('Скидка на товар', 'Уважаемый клиент, у нас есть специальное предложение: скидка 9% на все товары! Воспользуйтесь промокодом "CIRNO9".', 1),
-  ('Новинка в магазине', 'Мы рады представить вам новый товар в нашем магазине - Flandre Scarlett Fumofumo. Поторопитесь, количество ограничено!', 2),
-  ('Подтверждение заказа', 'Спасибо за ваш заказ! Ваш заказ №1 успешно оформлен. Следите за статусом доставки в разделе "Мои заказы".', 3);
+  ('Новинка в магазине', 'Мы рады представить вам новый товар в нашем магазине - Flandre Scarlett Fumofumo. Поторопитесь, количество ограничено!', 2);
 
 CREATE TABLE store (
   store_id int NOT NULL AUTO_INCREMENT,
@@ -239,7 +238,6 @@ VALUES
 CREATE TABLE myorder (
   order_id int NOT NULL AUTO_INCREMENT,
   order_status_id tinyint NOT NULL,
-  order_cost double NOT NULL,
   voucher_id int DEFAULT NULL,
   store_id int DEFAULT NULL,
   customer_id int NOT NULL,
@@ -248,6 +246,16 @@ CREATE TABLE myorder (
   FOREIGN KEY (store_id) REFERENCES store (store_id),
   FOREIGN KEY (customer_id) REFERENCES customer (customer_id),
   FOREIGN KEY (order_status_id) REFERENCES order_status (status_id)
+);
+
+CREATE TABLE itemorder_association (
+  order_id int NOT NULL,
+  item_id int NOT NULL,
+  item_count int NOT NULL,
+  item_price double NOT NULL,
+  PRIMARY KEY (order_id, item_id),
+  FOREIGN KEY (item_id) REFERENCES item (item_id),
+  FOREIGN KEY (order_id) REFERENCES myorder (order_id)
 );
 
 DELIMITER //
@@ -273,39 +281,61 @@ BEGIN
 	END IF;
 END //
 
+-- Триггер после вставки в myorder
+CREATE TRIGGER fumo_plush_store.AfterInsertOrders
+AFTER INSERT ON myorder
+FOR EACH ROW
+BEGIN
+	SELECT c.customer_first_name
+	INTO @name
+	FROM customer c
+	WHERE c.customer_id = NEW.customer_id;
+
+	SELECT os.status_name
+	INTO @status
+	FROM order_status os
+	WHERE os.status_id = NEW.order_status_id;
+	INSERT INTO notification (notification_title, notification_content, customer_id)
+	VALUES
+		(CONCAT('Новый статус заказа №', NEW.order_id), CONCAT(@name, ', Вашему заказу присвоен статус ', @status), NEW.customer_id);
+END //
+
+-- Триггер перед вставкой в itemorder_association
+CREATE TRIGGER BeforeInsertItemOrderAssociation
+BEFORE INSERT ON itemorder_association
+FOR EACH ROW
+BEGIN
+	SELECT i.item_cost
+	INTO @price
+	FROM item i
+	WHERE i.item_id = NEW.item_id;
+	SET NEW.item_price = @price;
+END //
+
 DELIMITER ;
 
 
-CREATE TABLE itemorder_association (
-  item_count int NOT NULL,
-  item_id int NOT NULL,
-  order_id int NOT NULL,
-  PRIMARY KEY (order_id, item_id),
-  FOREIGN KEY (item_id) REFERENCES item (item_id),
-  FOREIGN KEY (order_id) REFERENCES myorder (order_id)
-);
-
 -- Заказ 1
-INSERT INTO myorder (order_status_id, order_cost, store_id, customer_id, voucher_id)
+INSERT INTO myorder (order_status_id, store_id, customer_id, voucher_id)
 VALUES 
-  (1, 3750.00, 1, 3, 2);
+  (1, 1, 3, 2);
 INSERT INTO itemorder_association (order_id, item_id, item_count)
 VALUES 
   (1, 1, 2);
 
 -- Заказ 2
-INSERT INTO myorder (order_status_id, order_cost, store_id, customer_id)
+INSERT INTO myorder (order_status_id, store_id, customer_id)
 VALUES 
-  (2, 5300.00, 2, 1);
+  (2, 2, 1);
 INSERT INTO itemorder_association (order_id, item_id, item_count)
 VALUES 
   (2, 2, 1),
   (2, 1, 1);
   
 -- Заказ 3
-INSERT INTO myorder (order_status_id, order_cost, store_id, customer_id)
+INSERT INTO myorder (order_status_id, store_id, customer_id)
 VALUES 
-  (1, 8800.00, 3, 2);
+  (1, 3, 2);
 INSERT INTO itemorder_association (order_id, item_id, item_count)
 VALUES 
   (3, 3, 1),
@@ -313,25 +343,23 @@ VALUES
   (3, 1, 1);
 
 -- Заказ 4
-INSERT INTO myorder (order_status_id, order_cost, store_id, customer_id)
+INSERT INTO myorder (order_status_id, store_id, customer_id)
 VALUES
-  (5, 4200.00, 4, 3);
+  (5, 4, 3);
 INSERT INTO itemorder_association (order_id, item_id, item_count)
 VALUES 
   (4, 4, 1);
   
 DELIMITER //
 
--- Функция подсчета полной стоимости
-CREATE FUNCTION fumo_plush_store.GetOrderFullCost(orderId INT) RETURNS DOUBLE READS SQL DATA
+-- Функция подсчета стоимости заказа (с учетом промокода)
+CREATE FUNCTION fumo_plush_store.GetOrderTotalCost(orderId INT) RETURNS DOUBLE READS SQL DATA
 BEGIN
-    DECLARE fullCost DOUBLE;
-    SELECT SUM(i.item_cost * ia.item_count)
-    INTO fullCost
-    FROM itemorder_association ia
-    JOIN item i ON ia.item_id = i.item_id
-    WHERE ia.order_id = orderId;
-    RETURN fullCost;
+    DECLARE totalCost DOUBLE;
+    SELECT SUM(ia.item_price * ia.item_count)
+    INTO totalCost
+    FROM itemorder_association ia;
+    RETURN totalCost;
 END //
 
 DELIMITER ;
@@ -361,3 +389,35 @@ INSERT INTO checks (check_print_time, order_id, paid_in_cash, paid_by_card)
 VALUES 
   ('2023-11-11 15:45:00', 2, 2500.00, NULL),
   ('2023-11-13 16:00:00', 4, NULL, 4200.00);
+
+CREATE TABLE stock (
+  	item_id int NOT NULL,
+	item_count int CHECK (item_count >= 0) NOT NULL,
+  	PRIMARY KEY (item_id),
+  	FOREIGN KEY (item_id) REFERENCES item (item_id)
+);
+
+INSERT INTO stock (item_id, item_count)
+VALUES
+	(1, 100),
+	(2, 90),
+	(3, 80),
+	(4, 70),
+	(5, 60);
+
+CREATE TABLE cart (
+	customer_id int NOT NULL,
+  	item_id int NOT NULL,
+	item_count int CHECK (item_count >= 0) NOT NULL,
+  	PRIMARY KEY (item_id, customer_id),
+  	FOREIGN KEY (item_id) REFERENCES item (item_id),
+  	FOREIGN KEY (customer_id) REFERENCES customer (customer_id)
+);
+
+INSERT INTO cart (customer_id, item_id, item_count)
+VALUES
+	(1, 2, 1),
+	(1, 3, 4),
+	(2, 5, 1),
+	(4, 5, 12),
+	(4, 4, 10);
