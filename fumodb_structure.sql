@@ -405,20 +405,3 @@ VALUES
 	(3, 80),
 	(4, 70),
 	(5, 60);
-
-CREATE TABLE cart (
-	customer_id int NOT NULL,
-  	item_id int NOT NULL,
-	item_count int CHECK (item_count >= 0) NOT NULL,
-  	PRIMARY KEY (item_id, customer_id),
-  	FOREIGN KEY (item_id) REFERENCES item (item_id),
-  	FOREIGN KEY (customer_id) REFERENCES customer (customer_id)
-);
-
-INSERT INTO cart (customer_id, item_id, item_count)
-VALUES
-	(1, 2, 1),
-	(1, 3, 4),
-	(2, 5, 1),
-	(4, 5, 12),
-	(4, 4, 10);
