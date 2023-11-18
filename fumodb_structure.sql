@@ -358,7 +358,8 @@ BEGIN
     DECLARE totalCost DOUBLE;
     SELECT SUM(ia.item_price * ia.item_count)
     INTO totalCost
-    FROM itemorder_association ia;
+    FROM itemorder_association ia
+   	WHERE ia.order_id = orderId;
     RETURN totalCost;
 END //
 

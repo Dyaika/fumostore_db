@@ -1,7 +1,6 @@
 -- Выборка
-SELECT *
-FROM myorder m 
-where m.order_cost < 3000;
+SELECT *, GetOrderTotalCost(m.order_id)
+FROM myorder m;
 
 -- Проекция
 SELECT c.customer_last_name , c.customer_phone 
@@ -29,7 +28,7 @@ select ia.item_id
 FROM itemorder_association ia;
 
 -- Соединение
-SELECT m.order_id, i.item_name, i.item_cost, ia.item_count
+SELECT m.order_id, i.item_name, ia.item_price, ia.item_count
 FROM myorder m
 INNER JOIN itemorder_association ia ON ia.order_id = m.order_id
 INNER JOIN item i ON i.item_id = ia.item_id
