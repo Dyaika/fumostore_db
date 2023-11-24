@@ -10,14 +10,14 @@ FROM item i;
 SELECT
 	ia.order_id,
 	ia.item_id,
-	ROW_NUMBER() over (PARTITION BY order_id ORDER BY item_id)
+	ROW_NUMBER() over (PARTITION BY order_id ORDER BY item_id) as position
 FROM itemorder_association ia;
 
 -- Смещения
 SELECT
 	ia.order_id,
 	ia.item_id,
-	LAG(item_id) over (PARTITION BY order_id ORDER BY item_id)
+	LAG(item_id) over (PARTITION BY order_id ORDER BY item_id) as prev
 FROM itemorder_association ia;
 
 -- Свои
@@ -25,7 +25,8 @@ SELECT
 	ia.order_id, 
 	ia.item_id,
 	ia.item_price,
-	ia.item_price - AVG(item_price) over (PARTITION BY order_id ORDER BY item_price) as "local delta"
+	ia.item_price - AVG(item_price) 
+	over (PARTITION BY order_id ORDER BY item_price) as "local delta"
 FROM itemorder_association ia;
 
 SELECT 

@@ -391,17 +391,49 @@ VALUES
   ('2023-11-11 15:45:00', 2, 2500.00, NULL),
   ('2023-11-13 16:00:00', 4, NULL, 4200.00);
 
-CREATE TABLE stock (
+CREATE TABLE itemstore_association (
   	item_id int NOT NULL,
+	store_id int NOT NULL,
 	item_count int CHECK (item_count >= 0) NOT NULL,
-  	PRIMARY KEY (item_id),
-  	FOREIGN KEY (item_id) REFERENCES item (item_id)
+  	PRIMARY KEY (item_id, store_id),
+  	FOREIGN KEY (item_id) REFERENCES item (item_id),
+  	FOREIGN KEY (store_id) REFERENCES store (store_id)
 );
 
-INSERT INTO stock (item_id, item_count)
+INSERT INTO itemstore_association (item_id, store_id, item_count)
 VALUES
-	(1, 100),
-	(2, 90),
-	(3, 80),
-	(4, 70),
-	(5, 60);
+	(1, 1, 100),
+	(2, 1, 90),
+	(3, 1, 80),
+	(4, 1, 70),
+	(5, 1, 60),
+	(1, 2, 55),
+	(2, 2, 94),
+	(3, 2, 40),
+	(4, 2, 50),
+	(5, 2, 65),
+	(1, 3, 190),
+	(2, 3, 20),
+	(3, 3, 33),
+	(4, 3, 7),
+	(5, 3, 61),
+	(1, 4, 110),
+	(2, 4, 10),
+	(3, 4, 64),
+	(4, 4, 38),
+	(5, 4, 67);
+
+CREATE VIEW stock AS
+SELECT
+    i.item_id,
+    i.item_name,
+    i.item_cost,
+    SUM(ia.item_count) AS "count"
+FROM
+    itemstore_association ia
+JOIN
+    item i ON i.item_id = ia.item_id
+JOIN
+    store s ON s.store_id = ia.store_id
+GROUP BY
+    i.item_id, i.item_name, i.item_cost;
