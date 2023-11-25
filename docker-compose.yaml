@@ -1,6 +1,16 @@
 version: '3.1'
 
 services:
+  server:
+    depends_on:
+      - mysql
+    build:
+      context: ./server
+
+    volumes:
+      - ./server:/var/www/html/
+    ports:
+      - "80:80"
   mysql:
     image: mysql:latest
     container_name: my-mysql-container

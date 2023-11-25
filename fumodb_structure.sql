@@ -428,7 +428,7 @@ SELECT
     i.item_id,
     i.item_name,
     i.item_cost,
-    SUM(ia.item_count) AS "count"
+    SUM(ia.item_count) AS "item_count"
 FROM
     itemstore_association ia
 JOIN
