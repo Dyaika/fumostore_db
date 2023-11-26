@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,700;0,900;1,400&display=swap');
 body {
     font-family: 'Comic Sans MS', sans-serif;
     margin: 0;
@@ -7,16 +8,27 @@ body {
 header {
     background-color: #f0f0f0;
     padding: 20px;
-    text-align: center;
+    position: relative; /* Добавлено относительное позиционирование для контейнера header */
+}
+
+.home-button {
+    position: absolute;
+    left: 20px; /* Размещение кнопки слева с отступом */
+    top: 50%; /* Размещение кнопки по вертикали по центру заголовка */
+    transform: translateY(-50%); /* Коррекция для выравнивания по вертикали */
 }
 
 h1 {
     font-style: italic;
+    margin: 0; /* Убираем внешний отступ от h1 */
+    display: flex;
+    justify-content: center; /* Центрируем текст внутри h1 */
+    align-items: center; /* Центрируем текст внутри h1 */
 }
 
 .table-container {
     overflow-y: scroll;
-    max-height: 300px;
+    max-height: 40vh;
     margin: 20px;
 }
 
@@ -34,4 +46,7 @@ th, td {
 
 th {
     background-color: #f2f2f2;
+}
+#home_btn{
+    height: 50px;
 }
