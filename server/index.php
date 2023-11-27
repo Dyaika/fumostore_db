@@ -56,17 +56,17 @@
 
                 $result = $mysqli->query($addressQuery);
                 foreach ($result as $row) {
-                    $storeId = $row['store_id'];
-                    $fullAddress = $row['full_address'];
-                    $openTime = $row['open_time'];
-                    $closeTime = $row['close_time'];
+                    $itemId = $row['store_id'];
+                    $itemName = $row['full_address'];
+                    $itemCost = $row['open_time'];
+                    $itemCount = $row['close_time'];
 
                     // Делаем store_id кликабельным и перенаправляем на /store.php/{store_id}
-                    echo "<tr onclick=\"window.location='/store.php/{$storeId}'\">
-                            <td>{$storeId}</td>
-                            <td>{$fullAddress}</td>
-                            <td>{$openTime}</td>
-                            <td>{$closeTime}</td>
+                    echo "<tr onclick=\"window.location='/store.php/{$itemId}'\">
+                            <td>{$itemId}</td>
+                            <td>{$itemName}</td>
+                            <td>{$itemCost}</td>
+                            <td>{$itemCount}</td>
                           </tr>";
                 }
                 ?>

@@ -12,7 +12,7 @@
 <header>
         <div class="home-button">
             <a href="/index.php">
-                <img id="home_btn" src="/home.svg" alt="Home">
+                <img id="home_btn" src="/images/home.svg" alt="Home">
             </a>
         </div>
         <h1>Мягкие игрушки</h1>
@@ -30,14 +30,14 @@
         preg_match('/\/(\d+)/', $path, $matches);
 
         if (!empty($matches)) {
-            $store_id = $matches[1];
+            $item_id = $matches[1];
 
             // Проверка наличия store_id
-            $result = $mysqli->query("SELECT COUNT(*) as count FROM store WHERE store_id = $store_id");
+            $result = $mysqli->query("SELECT COUNT(*) as count FROM store WHERE store_id = $item_id");
             $row = $result->fetch_assoc();
-            $storeExists = $row['count'] > 0;
+            $itemExists = $row['count'] > 0;
 
-            if ($storeExists) {
+            if ($itemExists) {
                 echo "<table>
                     <thead>
                         <tr>
@@ -52,7 +52,7 @@
                 $result = $mysqli->query("SELECT i.item_id, i.item_name, i.item_cost, ia.item_count
                                     FROM itemstore_association as ia
                                     JOIN item as i ON i.item_id = ia.item_id
-                                    WHERE store_id = $store_id");
+                                    WHERE store_id = $item_id");
 
                 foreach ($result as $row) {
                     echo "<tr><td>{$row['item_id']}</td><td>{$row['item_name']}</td><td>{$row['item_cost']}</td><td>{$row['item_count']}</td></tr>";

@@ -199,11 +199,11 @@ CREATE TABLE item (
 
 INSERT INTO item (item_name, item_cost, item_description, item_release_year, item_width, item_height, image_url)
 VALUES 
-  ('Reimu Hakure', 2500.00, 'Мягкая и приятная игрушка с изображением Рейму Хакурей из Touhou Project.', NULL, 30.0, 20.0, 'reimu_fumofumo.jpg'),
-  ('Marisa Kirisame', 2800.00, 'Милый и пушистый плюшевый мариса Кирисаме, вдохновленный Touhou Project.', NULL, 25.0, 18.0, 'marisa_fumofumo.jpg'),
-  ('Yuyuko Saigyoji', 3500.00, 'Прекрасный плюшевый Yuyuko Saigyoji с тонкими деталями.', NULL, 35.0, 22.0, 'yuyuko_fumofumo.jpg'),
-  ('Flandre Scarlett', 4200.00, 'Очаровательная и красочная плюшевая игрушка Flandre Scarlett из Touhou Project.', NULL, 28.0, 25.0, 'flandre_fumofumo.jpg'),
-  ('Youmu Konpaku', 3200.00, 'Плюшевая игрушка Fumofumo с изображением Youmu Konpaku с мечом, обязательная для поклонников Touhou.', NULL, 32.0, 15.0, 'youmu_fumofumo.jpg');
+  ('Рейму Хакурей', 2500.00, 'Мягкая и приятная игрушка с изображением Рейму Хакурей из Touhou Project.', NULL, 30.0, 20.0, '/images/reimuV1.png'),
+  ('Мариса Кирисаме', 2800.00, 'Милый и пушистый плюшевый мариса Кирисаме, вдохновленный Touhou Project.', NULL, 25.0, 18.0, '/images/marisaV1.png'),
+  ('Ююко Сайгёдзи', 3500.00, 'Прекрасный плюшевый Yuyuko Saigyoji с тонкими деталями.', NULL, 35.0, 22.0, '/images/yuyukoV1.png'),
+  ('Фландр Скарлетт', 4200.00, 'Очаровательная и красочная плюшевая игрушка Flandre Scarlett из Touhou Project.', NULL, 28.0, 25.0, '/images/flandreV1.png'),
+  ('Ёму Конпаку', 3200.00, 'Плюшевая игрушка Fumofumo с изображением Youmu Konpaku с мечом, обязательная для поклонников Touhou.', NULL, 32.0, 15.0, '/images/youmuV1.png');
 
 CREATE TABLE notification (
   notification_id int NOT NULL AUTO_INCREMENT,
