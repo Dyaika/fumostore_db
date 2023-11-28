@@ -13,6 +13,10 @@
             transition: background-color 0.3s;
         }
 
+        a {
+            text-decoration: none;
+        }
+
         tbody tr:hover {
             background-color: #e0e0e0;
         }
@@ -89,6 +93,23 @@
             echo '</div>';
 
         } else {
+            echo "
+            <form method='get' action='/items.php'>
+                <label for='search_name'>Поиск по названию:</label>
+                <input type='text' name='search_name' id='search_name'>
+    
+                <label for='search_id'>Поиск по артикулу:</label>
+                <input type='text' name='search_id' id='search_id'>
+
+                <button type='submit'>Найти</button>
+            </form>";
+            $sort = $_GET['sort'] ?? '';
+            $orderBy = '';
+            if ($sort === 'asc') {
+                $orderBy = 'ORDER BY item_cost ASC';
+            } elseif ($sort === 'desc') {
+                $orderBy = 'ORDER BY item_cost DESC';
+            }
             // Обычная таблица товаров
             echo '<h2>Общий учёт</h2>';
             echo '<table>';
@@ -96,13 +117,31 @@
                     <tr>
                         <th>Артикул</th>
                         <th>Название</th>
-                        <th>Цена</th>
+                        <th>
+                        <a href="?sort=' . (($sort === 'asc') ? 'desc' : 'asc') . '">Цена' . (($sort === 'asc') ? '&#9650;' : '&#9660;') . '</a>
+                        </th>
                         <th>Количество</th>
                     </tr>
                 </thead>
                 <tbody>';
 
-            $result = $mysqli->query("SELECT * FROM stock");
+            // Добавьте проверку наличия параметров поиска
+            $searchName = $_GET['search_name'] ?? '';
+            $searchId = $_GET['search_id'] ?? '';
+
+            // Измените запрос в базе данных, учитывая параметры поиска
+            $query = "SELECT * FROM stock WHERE 1=1";
+
+            if (!empty($searchName)) {
+                $query .= " AND item_name LIKE '%$searchName%'";
+            }
+
+            if (!empty($searchId)) {
+                $query .= " AND item_id = '$searchId'";
+            }
+            $query .= " $orderBy";
+
+            $result = $mysqli->query($query);
             foreach ($result as $row) {
                 $itemId = $row['item_id'];
                 $itemName = $row['item_name'];
