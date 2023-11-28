@@ -8,6 +8,15 @@
     <link rel="icon" type="image/png" href="/images/favicon.png">
     <title>FumoFumo Учёт</title>
     <style>
+        #hoverable_id {
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #hoverable_id:hover {
+            background-color: #e0e0e0;
+        }
+
         .edit-form {
             margin: 20px;
         }
@@ -121,14 +130,18 @@
                                     WHERE store_id = $store_id");
 
                     foreach ($result as $row) {
+                        $itemId = $row['item_id'];
+                        $itemName = $row['item_name'];
+                        $itemCost = $row['item_cost'];
+                        $itemCount = $row['item_count'];
                         echo "<tr>
-                            <td>{$row['item_id']}</td>
-                            <td>{$row['item_name']}</td>
-                            <td>{$row['item_cost']}</td>
+                            <td id='hoverable_id' onclick=\"window.location='/item.php/{$itemId}'\">{$itemId}</td>
+                            <td>$itemName</td>
+                            <td>$itemCost</td>
                             <td>
                                 <form method='post' action='/update_isa.php'>
-                                    <input type='number' name='item_count' value='{$row['item_count']}' required>
-                                    <input type='hidden' name='item_id' value='{$row['item_id']}'>
+                                    <input type='number' name='item_count' value='$itemCount' required>
+                                    <input type='hidden' name='item_id' value='$itemId'>
                                     <input type='hidden' name='store_id' value='$store_id'>
                                     <button type='submit'>Обновить</button>
                                 </form>
