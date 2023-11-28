@@ -24,12 +24,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Выполнение запроса
     if ($mysqli->query($sql) === TRUE) {
-        echo "Новая запись успешно добавлена.";
+        // Перенаправляем обратно на страницу
+        header("Location: /items.php");
     } else {
         echo "Ошибка: " . $sql . "<br>" . $mysqli->error;
     }
 
     // Закрытие соединения с базой данных
     $mysqli->close();
+    exit;
 }
 ?>

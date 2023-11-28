@@ -50,9 +50,9 @@
             text-align: center;
         }
 
-        a.delete-btn {
-            color: white;
-            background-color: red;
+        a.delete-btn img{
+            width: 48px;
+            height: 48px;
         }
     </style>
 </head>
@@ -197,7 +197,8 @@
                                 </form>                                
                             </td>
                             <td class='delete-col'>
-                            <a class='delete-btn' href='/delete_isa.php?item_id={$itemId}&store_id={$store_id}'>Удалить</a>
+                            <a class='delete-btn' href='/delete_isa.php?item_id={$itemId}&store_id={$store_id}'>
+                            <img src='/images/delete.svg'></a>
                             </td>
                             </tr>";
                     }

@@ -9,7 +9,8 @@ if (!empty($item_id) && !empty($store_id)) {
     $result = $mysqli->query("DELETE FROM itemstore_association WHERE item_id = $item_id AND store_id = $store_id");
 
     if ($result) {
-        echo "Игрушка успешно удалена из магазина.";
+        // Перенаправляем обратно на страницу
+        header("Location: /store.php/{$store_id}");
     } else {
         echo "Ошибка при удалении игрушки из магазина: " . $mysqli->error;
     }
@@ -18,4 +19,5 @@ if (!empty($item_id) && !empty($store_id)) {
 }
 
 $mysqli->close();
+exit;
 ?>
