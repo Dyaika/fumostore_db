@@ -8,17 +8,18 @@
     <link rel="icon" type="image/png" href="/images/favicon.png">
     <title>FumoFumo Учёт</title>
     <style>
-        #hoverable_id {
-            cursor: pointer;
-            transition: background-color 0.3s;
+        form {
+            padding: 3px;
         }
 
-        #hoverable_id:hover {
-            background-color: #e0e0e0;
+        a {
+            text-decoration: none;
         }
 
         .edit-form {
             margin: 20px;
+            display: flex;
+            flex-direction: column;
         }
 
         .edit-form label {
@@ -38,6 +39,20 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            max-width: fit-content;
+        }
+
+        .large-btn {
+            max-width: none;
+        }
+
+        .delete-col {
+            text-align: center;
+        }
+
+        a.delete-btn {
+            color: white;
+            background-color: red;
         }
     </style>
 </head>
@@ -103,31 +118,66 @@
                     echo '</div>';
                 } else {
 
+                    echo "
+                    <form class='edit-form' method='get' action='/store.php/{$store_id}'>
+                        <label for='search_name'>Поиск по названию:</label>
+                        <input type='text' name='search_name' id='search_name'>
+            
+                        <label for='search_id'>Поиск по артикулу:</label>
+                        <input type='text' name='search_id' id='search_id'>
+        
+                        <button type='submit'>Найти</button>
+                    </form>";
+                    $sort = $_GET['sort'] ?? '';
+                    $orderBy = '';
+                    if ($sort === 'asc') {
+                        $orderBy = 'ORDER BY item_cost ASC';
+                    } elseif ($sort === 'desc') {
+                        $orderBy = 'ORDER BY item_cost DESC';
+                    }
 
-                    echo "<table>
+                    echo '<table>
                     <thead>
                         <tr>
                             <th>Артикул</th>
                             <th>Название</th>
-                            <th>Цена</th>
+                            <th>
+                            <a href="?sort=' . (($sort === 'asc') ? 'desc' : 'asc') . '">Цена' . (($sort === 'asc') ? '&#9650;' : '&#9660;') . '</a>
+
+                            </th>
                             <th>Количество</th>
+                            <th></th>
                         </tr>
                     </thead>
-                    <tbody>";
+                    <tbody>';
 
 
                     echo '<tr>
-                    <td colspan="4">
+                    <td colspan="5">
                     <form method="get" action="/store.php/' . $store_id . '">
                         <input type="hidden" name="action" value="add">
-                        <button type="submit">Добавить</button>
+                        <button class="large-btn" type="submit">Добавить</button>
                     </form>
                     </td>
                     </tr>';
-                    $result = $mysqli->query("SELECT i.item_id, i.item_name, i.item_cost, ia.item_count
-                                    FROM itemstore_association as ia
-                                    JOIN item as i ON i.item_id = ia.item_id
-                                    WHERE store_id = $store_id");
+
+                    // Добавьте проверку наличия параметров поиска
+                    $searchName = $_GET['search_name'] ?? '';
+                    $searchId = $_GET['search_id'] ?? '';
+                    $query = "SELECT i.item_id, i.item_name, i.item_cost, ia.item_count
+                    FROM itemstore_association as ia
+                    JOIN item as i ON i.item_id = ia.item_id
+                    WHERE store_id = $store_id";
+
+                    if (!empty($searchName)) {
+                        $query .= " AND i.item_name LIKE '%$searchName%'";
+                    }
+
+                    if (!empty($searchId)) {
+                        $query .= " AND i.item_id = '$searchId'";
+                    }
+                    $query .= " $orderBy";
+                    $result = $mysqli->query($query);
 
                     foreach ($result as $row) {
                         $itemId = $row['item_id'];
@@ -135,7 +185,7 @@
                         $itemCost = $row['item_cost'];
                         $itemCount = $row['item_count'];
                         echo "<tr>
-                            <td id='hoverable_id' onclick=\"window.location='/item.php/{$itemId}'\">{$itemId}</td>
+                            <td class='hoverable' onclick=\"window.location='/item.php/{$itemId}'\">{$itemId}</td>
                             <td>$itemName</td>
                             <td>$itemCost</td>
                             <td>
@@ -144,7 +194,10 @@
                                     <input type='hidden' name='item_id' value='$itemId'>
                                     <input type='hidden' name='store_id' value='$store_id'>
                                     <button type='submit'>Обновить</button>
-                                </form>
+                                </form>                                
+                            </td>
+                            <td class='delete-col'>
+                            <a class='delete-btn' href='/delete_isa.php?item_id={$itemId}&store_id={$store_id}'>Удалить</a>
                             </td>
                             </tr>";
                     }

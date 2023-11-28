@@ -8,17 +8,8 @@
     <link rel="icon" type="image/png" href="/images/favicon.png">
     <title>FumoFumo Учёт</title>
     <style>
-        tbody tr {
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
         a {
             text-decoration: none;
-        }
-
-        tbody tr:hover {
-            background-color: #e0e0e0;
         }
 
         .edit-form {
@@ -30,13 +21,13 @@
             margin-bottom: 10px;
         }
 
-        .edit-form input {
+        input {
             width: 100%;
             padding: 8px;
             margin-bottom: 10px;
         }
 
-        .edit-form button {
+        button {
             background-color: #4CAF50;
             color: white;
             padding: 10px 20px;
@@ -124,6 +115,14 @@
                     </tr>
                 </thead>
                 <tbody>';
+            echo '<tr>
+                <td colspan="4">
+                <form method="get" action="/items.php">
+                    <input type="hidden" name="action" value="add">
+                    <button class="large-btn" type="submit">Новый товар</button>
+                </form>
+                </td>
+                </tr>';
 
             // Добавьте проверку наличия параметров поиска
             $searchName = $_GET['search_name'] ?? '';
@@ -142,13 +141,14 @@
             $query .= " $orderBy";
 
             $result = $mysqli->query($query);
+
             foreach ($result as $row) {
                 $itemId = $row['item_id'];
                 $itemName = $row['item_name'];
                 $itemCost = $row['item_cost'];
                 $itemCount = $row['item_count'];
 
-                echo "<tr onclick=\"window.location='/item.php/{$itemId}'\">
+                echo "<tr class='hoverable' onclick=\"window.location='/item.php/{$itemId}'\">
                         <td>{$itemId}</td>
                         <td>{$itemName}</td>
                         <td>{$itemCost}</td>
@@ -157,14 +157,6 @@
             }
 
             echo '</tbody></table>';
-
-            // Кнопка "Добавить" при обычном просмотре
-            echo '<div style="text-align: center; margin-top: 20px;">
-                    <a href="/items.php?action=add"
-                        style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; font-size: 16px;">
-                        Добавить товар
-                    </a>
-                </div>';
         }
         ?>
     </div>

@@ -53,3 +53,20 @@ th {
 #home_btn {
     height: 50px;
 }
+.large-btn {
+    background-color: #594caf;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+}
+.hoverable {
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.hoverable:hover {
+    background-color: #e0e0e0;
+}
