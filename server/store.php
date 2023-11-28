@@ -5,11 +5,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/style.css" type="text/css" />
+    <link rel="icon" type="image/png" href="/images/favicon.png">
     <title>FumoFumo Учёт</title>
+    <style>
+        .edit-form {
+            margin: 20px;
+        }
+
+        .edit-form label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input {
+            padding: 8px;
+            margin: 10px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
-<header>
+    <header>
         <div class="home-button">
             <a href="/index.php">
                 <img id="home_btn" src="/images/home.svg" alt="Home">
@@ -30,15 +55,47 @@
         preg_match('/\/(\d+)/', $path, $matches);
 
         if (!empty($matches)) {
-            $item_id = $matches[1];
+            $store_id = $matches[1];
 
             // Проверка наличия store_id
-            $result = $mysqli->query("SELECT COUNT(*) as count FROM store WHERE store_id = $item_id");
+            $result = $mysqli->query("SELECT COUNT(*) as count FROM store WHERE store_id = $store_id");
             $row = $result->fetch_assoc();
-            $itemExists = $row['count'] > 0;
+            $storeExists = $row['count'] > 0;
 
-            if ($itemExists) {
-                echo "<table>
+            if ($storeExists) {
+                if (isset($_GET['action']) && $_GET['action'] === 'add') {
+                    // Форма для добавления товара в магазин
+                    echo '<div class="edit-form">';
+                    echo '<form method="post" action="/create_isa.php">';
+
+                    // Выбор товара из доступных товаров
+                    $availableItemsQuery = "SELECT i.item_id, i.item_name
+                    FROM item i
+                    LEFT JOIN itemstore_association ia ON i.item_id = ia.item_id AND ia.store_id = $store_id
+                    WHERE ia.item_id IS NULL";
+                    $availableItemsResult = $mysqli->query($availableItemsQuery);
+
+                    echo '<label for="item_id">Выберите товар:</label>';
+                    echo '<select name="item_id" required>';
+                    while ($item = $availableItemsResult->fetch_assoc()) {
+                        echo '<option value="' . $item['item_id'] . '">' . $item['item_name'] . '</option>';
+                    }
+                    echo '</select>';
+
+                    // Поле для указания количества
+                    echo '<label for="item_count">Количество:</label>';
+                    echo '<input type="number" name="item_count" required>';
+
+                    // Скрытое поле с ID магазина
+                    echo '<input type="hidden" name="store_id" value="' . $store_id . '">';
+
+                    echo '<button type="submit">Добавить</button>';
+                    echo '</form>';
+                    echo '</div>';
+                } else {
+
+
+                    echo "<table>
                     <thead>
                         <tr>
                             <th>Артикул</th>
@@ -49,17 +106,41 @@
                     </thead>
                     <tbody>";
 
-                $result = $mysqli->query("SELECT i.item_id, i.item_name, i.item_cost, ia.item_count
+
+                    echo '<tr>
+                    <td colspan="4">
+                    <form method="get" action="/store.php/' . $store_id . '">
+                        <input type="hidden" name="action" value="add">
+                        <button type="submit">Добавить</button>
+                    </form>
+                    </td>
+                    </tr>';
+                    $result = $mysqli->query("SELECT i.item_id, i.item_name, i.item_cost, ia.item_count
                                     FROM itemstore_association as ia
                                     JOIN item as i ON i.item_id = ia.item_id
-                                    WHERE store_id = $item_id");
+                                    WHERE store_id = $store_id");
 
-                foreach ($result as $row) {
-                    echo "<tr><td>{$row['item_id']}</td><td>{$row['item_name']}</td><td>{$row['item_cost']}</td><td>{$row['item_count']}</td></tr>";
-                }
+                    foreach ($result as $row) {
+                        echo "<tr>
+                            <td>{$row['item_id']}</td>
+                            <td>{$row['item_name']}</td>
+                            <td>{$row['item_cost']}</td>
+                            <td>
+                                <form method='post' action='/update_isa.php'>
+                                    <input type='number' name='item_count' value='{$row['item_count']}' required>
+                                    <input type='hidden' name='item_id' value='{$row['item_id']}'>
+                                    <input type='hidden' name='store_id' value='$store_id'>
+                                    <button type='submit'>Обновить</button>
+                                </form>
+                            </td>
+                            </tr>";
+                    }
 
-                echo "</tbody>
+
+                    echo "</tbody>
                     </table>";
+
+                }
             } else {
                 // Выводим сообщение об ошибке и кнопку "Назад к списку магазинов"
                 echo '<div style="text-align: center; margin-top: 50px;">

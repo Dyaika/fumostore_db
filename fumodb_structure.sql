@@ -29,9 +29,9 @@ CREATE TABLE city (
 
 INSERT INTO city (city_name)
 values
-	('Moscow'),
-	('Astana'),
-	('Volgograd'),
+	('Москва'),
+	('Астана'),
+	('Волгоград'),
 	('Buchen');
 
 CREATE TABLE street (
@@ -41,25 +41,25 @@ CREATE TABLE street (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO street (street_name) VALUES 
-  ('Tverskaya Street'),
-  ('Arbat'),
-  ('Presnenskaya Embankment'),
-  ('Novy Arbat'),
-  ('Sadovoye Koltso');
+  ('Тверская'),
+  ('Арбат'),
+  ('Пресненская набережная'),
+  ('Новый Арбат'),
+  ('Садовое Кольцо');
 
 INSERT INTO street (street_name) VALUES 
-  ('Presnenskaya Street'),
-  ('Abay'),
-  ('Dostyk'),
-  ('Kabanbay Batyr'),
-  ('Kenesary');
+  ('Бейбитшилик'),
+  ('Габдуллина'),
+  ('Проспект Абая'),
+  ('Проспект Сары-Арка'),
+  ('Проспект Республики');
 
 INSERT INTO street (street_name) VALUES 
-  ('Leningradskaya Street'),
-  ('Lenina Avenue'),
-  ('9 Yanvarya'),
-  ('Mira'),
-  ('Dzerzhinskogo');
+  ('Ленинградская'),
+  ('Ленина'),
+  ('9 Января'),
+  ('Мира'),
+  ('Дзержинского');
 
 INSERT INTO street (street_name) VALUES 
   ('Hauptstraße'),
@@ -199,11 +199,11 @@ CREATE TABLE item (
 
 INSERT INTO item (item_name, item_cost, item_description, item_release_year, item_width, item_height, image_url)
 VALUES 
-  ('Рейму Хакурей', 2500.00, 'Мягкая и приятная игрушка с изображением Рейму Хакурей из Touhou Project.', NULL, 30.0, 20.0, '/images/reimuV1.png'),
-  ('Мариса Кирисаме', 2800.00, 'Милый и пушистый плюшевый мариса Кирисаме, вдохновленный Touhou Project.', NULL, 25.0, 18.0, '/images/marisaV1.png'),
-  ('Ююко Сайгёдзи', 3500.00, 'Прекрасный плюшевый Yuyuko Saigyoji с тонкими деталями.', NULL, 35.0, 22.0, '/images/yuyukoV1.png'),
-  ('Фландр Скарлетт', 4200.00, 'Очаровательная и красочная плюшевая игрушка Flandre Scarlett из Touhou Project.', NULL, 28.0, 25.0, '/images/flandreV1.png'),
-  ('Ёму Конпаку', 3200.00, 'Плюшевая игрушка Fumofumo с изображением Youmu Konpaku с мечом, обязательная для поклонников Touhou.', NULL, 32.0, 15.0, '/images/youmuV1.png');
+  ('Рейму Хакурей', 2500.00, '"Тебе известна поговорка: Хорошее лекарство на вкус горько?"\nМягкая и приятная игрушка с изображением Рейму Хакурей из Touhou Project. Gift, официальные японские производители, в сотрудничестве с группой "ANGELTYPE" разработали дизайн этих мягких игрушек и в точности воспроизвели очарование Рейму. ', 2008, 14.0, 21.0, '/images/reimuV1.png'),
+  ('Мариса Кирисаме', 2800.00, '"Ваа, так много книг... Надо будет прихватить себе парочку на обратном пути"\nМилая плюшевая Мариса Кирисаме, вдохновленный Touhou Project. Пускай эти прекрасные куклы Фумо будут дарить Вам только положительные эмоции, уют, комфорт и хорошее настроение! Собери их всех!', 2008, 15.0, 25.0, '/images/marisaV1.png'),
+  ('Ююко Сайгёдзи', 3500.00, '"Я видела зловещий сон... Весенний ветер унес всю нашу весну. И ветер был черным."\nПрекрасная плюшевая игрушка модели Touhou Plushie Series [Yuyuko Saigyouji] с тонкими деталями. На этот раз мы ещё более тщательно воспроизвели детали костюма! Рост сидя составляет около 20 см, а шляпа является съёмной!', 2010, 15.0, 22.0, '/images/yuyukoV1.png'),
+  ('Фландр Скарлетт', 4200.00, 'Очаровательная и красочная плюшевая игрушка Flandre Scarlett из Touhou Project.', 2009, 28.0, 20.0, '/images/flandreV1.png'),
+  ('Ёму Конпаку', 3200.00, '"Еще немного весны, и Сайгё Аякаси зацветёт полностью"\nПлюшевая игрушка Touhou Plushie Series [Youmu Konpaku] с изображением Ёму с мечом, обязательная для поклонников Touhou.', 2010, 17.0, 21.0, '/images/youmuV1.png');
 
 CREATE TABLE notification (
   notification_id int NOT NULL AUTO_INCREMENT,
@@ -231,8 +231,8 @@ CREATE TABLE store (
 INSERT INTO store (open_time, close_time, address_id)
 VALUES 
   ('09:00:00', '18:00:00', 1),
-  ('10:30:00', '20:00:00', 6),
-  ('08:00:00', '17:30:00', 11),
+  ('10:30:00', '20:00:00', 10),
+  ('08:00:00', '17:30:00', 15),
   ('11:00:00', '19:00:00', 16);
 
 CREATE TABLE myorder (
@@ -428,12 +428,12 @@ SELECT
     i.item_id,
     i.item_name,
     i.item_cost,
-    SUM(ia.item_count) AS "item_count"
+    COALESCE(SUM(ia.item_count), 0) AS "item_count"
 FROM
-    itemstore_association ia
-JOIN
-    item i ON i.item_id = ia.item_id
-JOIN
+    item i
+LEFT JOIN
+    itemstore_association ia ON ia.item_id = i.item_id
+LEFT JOIN
     store s ON s.store_id = ia.store_id
 GROUP BY
     i.item_id, i.item_name, i.item_cost;
