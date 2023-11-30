@@ -14,6 +14,8 @@
 
         .edit-form {
             margin: 20px;
+            display: flex;
+            flex-direction: column;
         }
 
         .edit-form label {
@@ -22,7 +24,8 @@
         }
 
         input {
-            width: 100%;
+            display: block;
+            min-width: 30em;
             padding: 8px;
             margin-bottom: 10px;
         }
@@ -34,6 +37,10 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+        }
+
+        .count0 {
+            background-color: red;
         }
     </style>
 </head>
@@ -84,34 +91,72 @@
             echo '</div>';
 
         } else {
+            // Добавьте проверку наличия параметров поиска
+            $searchName = $_GET['search_name'] ?? '';
+            $searchId = $_GET['search_id'] ?? '';
+            $minCost = $_GET['min_cost'] ?? '';
+            $maxCost = $_GET['max_cost'] ?? '';
+            $sort_cost = $_GET['sort_cost'] ?? '';
+            $sort_name = $_GET['sort_name'] ?? '';
+            $sort_count = $_GET['sort_count'] ?? '';
+            $queryLink = "&search_name=$searchName&search_id=$searchId&min_cost=$minCost&max_cost=$maxCost";
             echo "
             <form method='get' action='/items.php'>
                 <label for='search_name'>Поиск по названию:</label>
-                <input type='text' name='search_name' id='search_name'>
+                <input type='text' name='search_name' id='search_name' value='$searchName'>
     
                 <label for='search_id'>Поиск по артикулу:</label>
-                <input type='text' name='search_id' id='search_id'>
+                <input type='text' name='search_id' id='search_id' value='$searchId'>
+                
+                <label for='min_cost'>Минимальная цена:</label>
+                <input type='numeric' name='min_cost' id='min_cost' value='$minCost'>
+                
+                <label for='max_cost'>Максимальная цена:</label>
+                <input type='numeric' name='max_cost' id='max_cost' value='$maxCost'>
+                <input type='hidden' name='sort_cost' value='$sort_cost'>
+                <input type='hidden' name='sort_name' value='$sort_name'>
+                <input type='hidden' name='sort_count' value='$sort_count'>
 
                 <button type='submit'>Найти</button>
-            </form>";
-            $sort = $_GET['sort'] ?? '';
-            $orderBy = '';
-            if ($sort === 'asc') {
-                $orderBy = 'ORDER BY item_cost ASC';
-            } elseif ($sort === 'desc') {
-                $orderBy = 'ORDER BY item_cost DESC';
+            </form>
+            <a href='?'>Сброс</a>";
+            $orderByClauses = [];
+
+            if ($sort_cost === 'asc') {
+                $orderByClauses[] = 'item_cost ASC';
+            } elseif ($sort_cost === 'desc') {
+                $orderByClauses[] = 'item_cost DESC';
             }
+
+            if ($sort_name === 'asc') {
+                $orderByClauses[] = 'item_name ASC';
+            } elseif ($sort_name === 'desc') {
+                $orderByClauses[] = 'item_name DESC';
+            }
+
+            if ($sort_count === 'asc') {
+                $orderByClauses[] = 'item_count ASC';
+            } elseif ($sort_count === 'desc') {
+                $orderByClauses[] = 'item_count DESC';
+            }
+
+            $orderBy = !empty($orderByClauses) ? 'ORDER BY ' . implode(', ', $orderByClauses) : '';
+
             // Обычная таблица товаров
             echo '<h2>Общий учёт</h2>';
             echo '<table>';
             echo '<thead>
                     <tr>
                         <th>Артикул</th>
-                        <th>Название</th>
                         <th>
-                        <a href="?sort=' . (($sort === 'asc') ? 'desc' : 'asc') . '">Цена' . (($sort === 'asc') ? '&#9650;' : '&#9660;') . '</a>
+                        <a href="?sort_name=' . (($sort_name === 'asc') ? 'desc' : 'asc') . '&sort_cost=' . $sort_cost . $queryLink . '">Название' . (($sort_name === 'asc') ? '&#9650;' : '&#9660;') . '</a>
                         </th>
-                        <th>Количество</th>
+                        <th>
+                        <a href="?sort_cost=' . (($sort_cost === 'asc') ? 'desc' : 'asc') . '&sort_name=' . $sort_name . $queryLink . '">Цена' . (($sort_cost === 'asc') ? '&#9650;' : '&#9660;') . '</a>
+                        </th>
+                        <th>
+                        <a href="?sort_count=' . (($sort_count === 'asc') ? 'desc' : 'asc') . $queryLink . '">Количество' . (($sort_count === 'asc') ? '&#9650;' : '&#9660;') . '</a>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>';
@@ -124,10 +169,6 @@
                 </td>
                 </tr>';
 
-            // Добавьте проверку наличия параметров поиска
-            $searchName = $_GET['search_name'] ?? '';
-            $searchId = $_GET['search_id'] ?? '';
-
             // Измените запрос в базе данных, учитывая параметры поиска
             $query = "SELECT * FROM stock WHERE 1=1";
 
@@ -137,6 +178,12 @@
 
             if (!empty($searchId)) {
                 $query .= " AND item_id = '$searchId'";
+            }
+            if (!empty($minCost)) {
+                $query .= " AND item_cost >= '$minCost'";
+            }
+            if (!empty($maxCost)) {
+                $query .= " AND item_cost <= '$maxCost'";
             }
             $query .= " $orderBy";
 
@@ -152,7 +199,7 @@
                         <td>{$itemId}</td>
                         <td>{$itemName}</td>
                         <td>{$itemCost}</td>
-                        <td>{$itemCount}</td>
+                        <td class='count$itemCount'>{$itemCount}</td>
                     </tr>";
             }
 
